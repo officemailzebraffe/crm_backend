@@ -61,7 +61,7 @@ module.exports = async (req, res) => {
 
   // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return res.status(200).end(); 
   }
 
   // Debug endpoint to check environment
@@ -99,14 +99,17 @@ module.exports = async (req, res) => {
         password: process.env.SUPERADMIN_PASSWORD,
         phone: '+91-9876543210',
         role: 'admin',
+        department: 'Management',
+        designation: 'System Administrator',
+        employmentType: 'full_time',
         isActive: true,
       });
 
-      // Create DSA Mentor project
+      // Create Tech Company project
       const project = await Project.create({
-        name: 'DSA Mentor',
-        description: 'Data Structures & Algorithms mentorship program',
-        type: 'education',
+        name: 'Tech Company',
+        description: 'Employee Management System for Tech Company',
+        type: 'organization',
         owner: admin._id,
         team: [{ userId: admin._id, role: 'admin' }],
         isActive: true,

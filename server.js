@@ -112,6 +112,8 @@ app.use("/api/tasks", require("./routes/tasks"));
 app.use("/api/interactions", require("./routes/interactions"));
 app.use("/api/analytics", require("./routes/analytics"));
 app.use("/api/users", require("./routes/users"));
+app.use("/api/attendance", require("./routes/attendance"));
+app.use("/api/leaves", require("./routes/leaves"));
 
 /* =========================
    HEALTH CHECK
