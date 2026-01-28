@@ -166,15 +166,15 @@ exports.logout = async (req, res) => {
     }
 
     // Clear cookies
-    res.cookie('token', 'none', {
+    const cookieOptions = {
       expires: new Date(Date.now() + 10 * 1000),
-      httpOnly: true
-    });
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    };
 
-    res.cookie('refreshToken', 'none', {
-      expires: new Date(Date.now() + 10 * 1000),
-      httpOnly: true
-    });
+    res.cookie('token', 'none', cookieOptions);
+    res.cookie('refreshToken', 'none', cookieOptions);
 
     res.status(200).json({
       success: true,
@@ -308,19 +308,16 @@ const sendTokenResponse = async (user, statusCode, res) => {
         Date.now() + (process.env.JWT_COOKIE_EXPIRE || 30) * 24 * 60 * 60 * 1000
       ),
       httpOnly: true,
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: process.env.NODE_ENV === 'production',
     };
 
     const refreshTokenOptions = {
       expires: expiresAt,
       httpOnly: true,
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: process.env.NODE_ENV === 'production',
     };
-
-    if (process.env.NODE_ENV === 'production') {
-      tokenOptions.secure = true;
-      refreshTokenOptions.secure = true;
-    }
 
     // Remove password from output
     const userObj = user.toObject();
