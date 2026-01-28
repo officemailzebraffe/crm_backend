@@ -5,10 +5,15 @@ const Course = require('../models/Course');
 // @access  Private
 exports.getCourses = async (req, res) => {
   try {
-    const { projectId, category, level, isActive, search } = req.query;
+    let { projectId, category, level, isActive, search } = req.query;
+
+    // If projectId is not provided, use user's activeProject
+    if (!projectId && req.user.activeProject) {
+      projectId = req.user.activeProject.toString();
+    }
 
     if (!projectId) {
-      return res.status(400).json({ success: false, error: 'Project ID is required' });
+      return res.status(400).json({ success: false, error: 'Project ID is required. Please select a project first.' });
     }
 
     let query = { projectId };

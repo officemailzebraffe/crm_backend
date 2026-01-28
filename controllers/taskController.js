@@ -5,10 +5,18 @@ const Task = require('../models/Task');
 // @access  Private
 exports.getTasks = async (req, res) => {
   try {
-    const { projectId, status, priority, assignedTo, relatedTo, relatedId } = req.query;
+    let { projectId, status, priority, assignedTo, relatedTo, relatedId } = req.query;
+
+    // If projectId is not provided, use user's activeProject
+    if (!projectId && req.user.activeProject) {
+      projectId = req.user.activeProject.toString();
+    }
 
     if (!projectId) {
-      return res.status(400).json({ success: false, error: 'Project ID is required' });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Project ID is required. Please select a project first.' 
+      });
     }
 
     let query = { projectId };
@@ -64,6 +72,19 @@ exports.getTask = async (req, res) => {
 exports.createTask = async (req, res) => {
   try {
     req.body.assignedBy = req.user.id;
+
+    // If projectId is not provided, use user's activeProject
+    if (!req.body.projectId && req.user.activeProject) {
+      req.body.projectId = req.user.activeProject;
+    }
+
+    // Validate projectId is provided
+    if (!req.body.projectId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Project ID is required. Please select a project first.' 
+      });
+    }
 
     const task = await Task.create(req.body);
 

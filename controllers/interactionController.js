@@ -5,10 +5,15 @@ const Interaction = require('../models/Interaction');
 // @access  Private
 exports.getInteractions = async (req, res) => {
   try {
-    const { projectId, relatedTo, relatedId, type, performedBy } = req.query;
+    let { projectId, relatedTo, relatedId, type, performedBy } = req.query;
+
+    // If projectId is not provided, use user's activeProject
+    if (!projectId && req.user.activeProject) {
+      projectId = req.user.activeProject.toString();
+    }
 
     if (!projectId) {
-      return res.status(400).json({ success: false, error: 'Project ID is required' });
+      return res.status(400).json({ success: false, error: 'Project ID is required. Please select a project first.' });
     }
 
     let query = { projectId };

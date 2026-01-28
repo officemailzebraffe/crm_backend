@@ -10,10 +10,15 @@ const mongoose = require('mongoose');
 // @access  Private
 exports.getDashboardAnalytics = async (req, res) => {
   try {
-    const { projectId } = req.query;
+    let { projectId } = req.query;
+
+    // If projectId is not provided, use user's activeProject
+    if (!projectId && req.user.activeProject) {
+      projectId = req.user.activeProject.toString();
+    }
 
     if (!projectId) {
-      return res.status(400).json({ success: false, error: 'Project ID is required' });
+      return res.status(400).json({ success: false, error: 'Project ID is required. Please select a project first.' });
     }
 
     const projectObjectId = new mongoose.Types.ObjectId(projectId);
@@ -127,10 +132,15 @@ exports.getDashboardAnalytics = async (req, res) => {
 // @access  Private
 exports.getLeadAnalytics = async (req, res) => {
   try {
-    const { projectId, startDate, endDate } = req.query;
+    let { projectId, startDate, endDate } = req.query;
+
+    // If projectId is not provided, use user's activeProject
+    if (!projectId && req.user.activeProject) {
+      projectId = req.user.activeProject.toString();
+    }
 
     if (!projectId) {
-      return res.status(400).json({ success: false, error: 'Project ID is required' });
+      return res.status(400).json({ success: false, error: 'Project ID is required. Please select a project first.' });
     }
 
     const projectObjectId = new mongoose.Types.ObjectId(projectId);
@@ -197,10 +207,15 @@ exports.getLeadAnalytics = async (req, res) => {
 // @access  Private
 exports.getStudentAnalytics = async (req, res) => {
   try {
-    const { projectId } = req.query;
+    let { projectId } = req.query;
+
+    // If projectId is not provided, use user's activeProject
+    if (!projectId && req.user.activeProject) {
+      projectId = req.user.activeProject.toString();
+    }
 
     if (!projectId) {
-      return res.status(400).json({ success: false, error: 'Project ID is required' });
+      return res.status(400).json({ success: false, error: 'Project ID is required. Please select a project first.' });
     }
 
     const projectObjectId = new mongoose.Types.ObjectId(projectId);
@@ -269,10 +284,15 @@ exports.getStudentAnalytics = async (req, res) => {
 // @access  Private
 exports.getRevenueAnalytics = async (req, res) => {
   try {
-    const { projectId, startDate, endDate } = req.query;
+    let { projectId, startDate, endDate } = req.query;
+
+    // If projectId is not provided, use user's activeProject
+    if (!projectId && req.user.activeProject) {
+      projectId = req.user.activeProject.toString();
+    }
 
     if (!projectId) {
-      return res.status(400).json({ success: false, error: 'Project ID is required' });
+      return res.status(400).json({ success: false, error: 'Project ID is required. Please select a project first.' });
     }
 
     const projectObjectId = new mongoose.Types.ObjectId(projectId);
