@@ -74,6 +74,63 @@ module.exports = async (req, res) => {
     });
   }
 
+  // One-time seed endpoint for production
+  if (req.url === '/api/seed-admin' && req.method === 'POST') {
+    try {
+      await initializeDB();
+      const User = require('../models/User');
+      const Project = require('../models/Project');
+
+      // Check if admin exists
+      let admin = await User.findOne({ email: process.env.SUPERADMIN_EMAIL });
+      
+      if (admin) {
+        return res.status(200).json({
+          success: true,
+          message: 'Admin already exists',
+          email: process.env.SUPERADMIN_EMAIL,
+        });
+      }
+
+      // Create admin
+      admin = await User.create({
+        name: process.env.SUPERADMIN_USERNAME || 'Admin',
+        email: process.env.SUPERADMIN_EMAIL,
+        password: process.env.SUPERADMIN_PASSWORD,
+        phone: '+91-9876543210',
+        role: 'admin',
+        isActive: true,
+      });
+
+      // Create DSA Mentor project
+      const project = await Project.create({
+        name: 'DSA Mentor',
+        description: 'Data Structures & Algorithms mentorship program',
+        type: 'education',
+        owner: admin._id,
+        team: [{ userId: admin._id, role: 'admin' }],
+        isActive: true,
+      });
+
+      // Link project to admin
+      admin.projects.push({ projectId: project._id, role: 'admin' });
+      admin.activeProject = project._id;
+      await admin.save();
+
+      return res.status(200).json({
+        success: true,
+        message: 'Admin and project created successfully',
+        email: process.env.SUPERADMIN_EMAIL,
+      });
+    } catch (error) {
+      console.error('Seed error:', error);
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+  }
+
   try {
     // Ensure database is connected
     await initializeDB();
