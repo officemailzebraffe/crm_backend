@@ -1,40 +1,57 @@
 # Vercel Deployment Setup
 
-## Required Environment Variables
+## ✅ MongoDB Atlas Connection Verified
 
-You **MUST** set these environment variables in your Vercel project settings:
+Your MongoDB Atlas connection is working! Connection details:
+- **Cluster:** crm.atodvra.mongodb.net  
+- **Database:** crm_portal
+- **Status:** Connected successfully
+
+## Required Environment Variables for Vercel
 
 ### Go to: Vercel Dashboard → Your Project → Settings → Environment Variables
 
-Add the following variables:
+Add the following variables (copy from `.env.production` file):
 
-### 1. Database
-- **Variable Name:** `MONGODB_URI`
-- **Value:** Your MongoDB connection string
-- **Example:** `mongodb+srv://username:password@cluster.mongodb.net/crm_portal?retryWrites=true&w=majority`
+### 1. Database (✅ Verified Working)
+```
+MONGODB_URI=mongodb+srv://Vercel-Admin-crm:ptUACa5EjeVdfzPJ@crm.atodvra.mongodb.net/crm_portal?retryWrites=true&w=majority&appName=crm
+```
 
 ### 2. JWT Secrets
-- **Variable Name:** `JWT_SECRET`
-- **Value:** A random secure string (at least 32 characters)
-- **Example:** `your-super-secret-jwt-key-change-this-in-production`
+```
+JWT_SECRET=8141982a50dc83f3a04b8ee7061cff669e71c445bfe0d215e46195cffd53526d8e65fda436dd6dfc627e1ba16fe93bbb03651647637b7a438c17bc0873b74065
 
-- **Variable Name:** `JWT_REFRESH_SECRET`
-- **Value:** Another random secure string (different from JWT_SECRET)
-- **Example:** `your-super-secret-refresh-key-change-this-too`
+JWT_REFRESH_SECRET=9251a93b61ed94g4b15c9ff8172dggh77af82d556cfg1e326f57206dgge64637d9f76geb547ee7ged738f2cb27gf04ccb14762758748c8b549d28cd0984c85176
 
-### 3. Frontend URL
-- **Variable Name:** `CLIENT_URL`
-- **Value:** Your frontend deployment URL
-- **Example:** `https://your-frontend-app.vercel.app`
+JWT_EXPIRE=30d
+
+JWT_COOKIE_EXPIRE=30
+```
+
+### 3. Super Admin Credentials
+```
+SUPERADMIN_EMAIL=admin@dsamentor.com
+
+SUPERADMIN_PASSWORD=SuperAdmin@123
+
+SUPERADMIN_USERNAME=admin
+```
 
 ### 4. Node Environment
-- **Variable Name:** `NODE_ENV`
-- **Value:** `production`
+```
+NODE_ENV=production
+```
 
-### 5. Optional - Production URL
-- **Variable Name:** `PRODUCTION_URL`
-- **Value:** Your backend URL (same as your Vercel deployment)
-- **Example:** `https://your-backend-api.vercel.app`
+### 5. Frontend URL (Update after frontend deployment)
+```
+CLIENT_URL=https://your-frontend.vercel.app
+```
+
+### 6. Backend URL (Update after backend deployment)
+```
+PRODUCTION_URL=https://your-backend.vercel.app
+```
 
 ## Important Notes:
 
