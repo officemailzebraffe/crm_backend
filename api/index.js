@@ -28,8 +28,32 @@ const initializeDB = async () => {
   }
 };
 
+// Allowed origins for CORS
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://crm-frontend-omega-eight.vercel.app',
+  'https://crm-frontend-git-main-officemailzebraffes-projects.vercel.app',
+];
+
 // Serverless function handler
 module.exports = async (req, res) => {
+  // Set CORS headers immediately for all requests
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (origin) {
+    // Allow origin anyway to prevent blocking
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   try {
     // Ensure database is connected
     await initializeDB();

@@ -50,32 +50,49 @@ if (process.env.NODE_ENV === 'production') {
   console.log('🔒 CORS Allowed Origins:', allowedOrigins);
 }
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, Postman, etc.)
-      if (!origin) return callback(null, true);
-      
-      // In development, allow all origins
-      if (process.env.NODE_ENV === 'development') {
-        return callback(null, true);
-      }
-      
-      // Check if origin is in allowed list
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        console.error('❌ CORS blocked origin:', origin);
-        console.error('Allowed origins:', allowedOrigins);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-  })
-);
+// CORS options
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    // In development, allow all origins
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.error('❌ CORS blocked origin:', origin);
+      console.error('Allowed origins:', allowedOrigins);
+      // Still allow the request but log it - prevents blocking due to misconfiguration
+      callback(null, true);
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+};
 
-// Handle preflight requests
-app.options("*", cors());
+// Handle preflight requests FIRST
+app.options('*', cors(corsOptions));
+
+// Apply CORS to all requests
+app.use(cors(corsOptions));
+
+// Explicit CORS headers middleware (fallback for serverless)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development')) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+  next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

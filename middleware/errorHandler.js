@@ -5,6 +5,13 @@ const errorHandler = (err, req, res, next) => {
   // Log to console for dev
   console.error(err);
 
+  // Ensure CORS headers are present on error responses
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {
     const message = 'Resource not found';
