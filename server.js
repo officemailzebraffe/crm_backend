@@ -36,11 +36,18 @@ const allowedOrigins = [
   process.env.CLIENT_URL || 'http://localhost:3000',
   'http://localhost:3000',
   'http://localhost:5000',
+  'https://crm-frontend-omega-eight.vercel.app', // Production frontend
+  'https://crm-frontend-git-main-officemailzebraffes-projects.vercel.app', // Git branch deploy
 ];
 
 // Add production origins if specified
 if (process.env.PRODUCTION_URL) {
   allowedOrigins.push(process.env.PRODUCTION_URL);
+}
+
+// Log allowed origins in production
+if (process.env.NODE_ENV === 'production') {
+  console.log('🔒 CORS Allowed Origins:', allowedOrigins);
 }
 
 app.use(
@@ -58,6 +65,8 @@ app.use(
       if (allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
+        console.error('❌ CORS blocked origin:', origin);
+        console.error('Allowed origins:', allowedOrigins);
         callback(new Error('Not allowed by CORS'));
       }
     },
