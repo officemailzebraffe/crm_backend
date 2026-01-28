@@ -13,10 +13,17 @@ const initializeDB = async () => {
 
   try {
     console.log('Initializing new database connection');
+    console.log('Environment check:', {
+      nodeEnv: process.env.NODE_ENV,
+      hasMongoUri: !!process.env.MONGODB_URI,
+      hasJwtSecret: !!process.env.JWT_SECRET
+    });
+    
     cachedConnection = await connectDB();
     return cachedConnection;
   } catch (error) {
     console.error('Failed to connect to database:', error);
+    cachedConnection = null; // Reset cache on error
     throw error;
   }
 };
@@ -31,9 +38,14 @@ module.exports = async (req, res) => {
     return app(req, res);
   } catch (error) {
     console.error('Serverless function error:', error);
+    
+    // Return detailed error in development, generic in production
+    const isDev = process.env.NODE_ENV !== 'production';
+    
     return res.status(500).json({
       error: 'Internal Server Error',
-      message: error.message
+      message: isDev ? error.message : 'Something went wrong',
+      ...(isDev && { stack: error.stack })
     });
   }
 };

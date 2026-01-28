@@ -17,6 +17,18 @@ const connectDB = async (retries = 5, delay = 5000) => {
     return mongoose.connection;
   }
 
+  // Get MongoDB URI with fallback options
+  const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.DATABASE_URL;
+  
+  if (!mongoUri) {
+    const error = new Error('MongoDB URI is not defined. Please set MONGODB_URI environment variable.');
+    console.error('❌', error.message);
+    console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('MONGO') || key.includes('DATABASE')));
+    throw error;
+  }
+
+  console.log('🔗 Attempting to connect to MongoDB...');
+
   const options = {
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 45000,
@@ -27,7 +39,7 @@ const connectDB = async (retries = 5, delay = 5000) => {
 
   for (let i = 0; i < retries; i++) {
     try {
-      const conn = await mongoose.connect(process.env.MONGODB_URI, options);
+      const conn = await mongoose.connect(mongoUri, options);
 
       console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
       console.log(`📊 Database: ${conn.connection.name}`);
