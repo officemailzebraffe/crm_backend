@@ -21,6 +21,15 @@ exports.getTasks = async (req, res) => {
 
     let query = { projectId };
 
+    // Role-based filtering: employees see only their assigned tasks or unassigned tasks
+    if (req.user.role === 'employee') {
+      query.$or = [
+        { assignedTo: req.user.id },
+        { assignedTo: null },
+        { assignedTo: { $exists: false } }
+      ];
+    }
+
     if (status) query.status = status;
     if (priority) query.priority = priority;
     if (assignedTo) query.assignedTo = assignedTo;
@@ -31,6 +40,7 @@ exports.getTasks = async (req, res) => {
       .populate('assignedTo', 'name email')
       .populate('assignedBy', 'name')
       .populate('relatedId')
+      .populate('statusHistory.changedBy', 'name email')
       .sort('dueDate');
 
     res.status(200).json({
@@ -51,7 +61,8 @@ exports.getTask = async (req, res) => {
     const task = await Task.findById(req.params.id)
       .populate('assignedTo', 'name email')
       .populate('assignedBy', 'name')
-      .populate('relatedId');
+      .populate('relatedId')
+      .populate('statusHistory.changedBy', 'name email');
 
     if (!task) {
       return res.status(404).json({ success: false, error: 'Task not found' });
@@ -102,14 +113,63 @@ exports.createTask = async (req, res) => {
 // @access  Private
 exports.updateTask = async (req, res) => {
   try {
+    // Get the existing task first to track status changes
+    const existingTask = await Task.findById(req.params.id);
+    
+    if (!existingTask) {
+      return res.status(404).json({ success: false, error: 'Task not found' });
+    }
+
+    // Permission check for employees
+    if (req.user.role === 'employee') {
+      const isAssignedToUser = existingTask.assignedTo && existingTask.assignedTo.toString() === req.user.id;
+      const isUnassigned = !existingTask.assignedTo;
+      
+      // Employees can only update tasks assigned to them or unassigned tasks
+      if (!isAssignedToUser && !isUnassigned) {
+        return res.status(403).json({ 
+          success: false, 
+          error: 'You do not have permission to update this task' 
+        });
+      }
+      
+      // Employees can only change status, not other fields
+      const allowedFields = ['status'];
+      const attemptedFields = Object.keys(req.body);
+      const hasUnauthorizedFields = attemptedFields.some(field => !allowedFields.includes(field));
+      
+      if (hasUnauthorizedFields) {
+        return res.status(403).json({ 
+          success: false, 
+          error: 'Employees can only update task status' 
+        });
+      }
+    }
+
+    // If status is being changed, add to statusHistory
+    if (req.body.status && req.body.status !== existingTask.status) {
+      const statusEntry = {
+        status: req.body.status,
+        changedBy: req.user.id,
+        changedAt: new Date(),
+        previousStatus: existingTask.status
+      };
+      
+      // Add to statusHistory array
+      if (!existingTask.statusHistory) {
+        existingTask.statusHistory = [];
+      }
+      existingTask.statusHistory.push(statusEntry);
+      req.body.statusHistory = existingTask.statusHistory;
+    }
+
     const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
-    });
-
-    if (!task) {
-      return res.status(404).json({ success: false, error: 'Task not found' });
-    }
+    })
+      .populate('assignedTo', 'name email')
+      .populate('assignedBy', 'name')
+      .populate('statusHistory.changedBy', 'name email');
 
     res.status(200).json({
       success: true,
@@ -129,6 +189,14 @@ exports.deleteTask = async (req, res) => {
 
     if (!task) {
       return res.status(404).json({ success: false, error: 'Task not found' });
+    }
+
+    // Permission check: only admins and managers can delete tasks
+    if (req.user.role === 'employee') {
+      return res.status(403).json({ 
+        success: false, 
+        error: 'You do not have permission to delete tasks' 
+      });
     }
 
     await task.deleteOne();

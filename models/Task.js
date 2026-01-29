@@ -64,6 +64,26 @@ const TaskSchema = new mongoose.Schema({
     },
     time: Date
   },
+  statusHistory: [{
+    status: {
+      type: String,
+      enum: ['pending', 'in_progress', 'in-progress', 'completed', 'cancelled'],
+      required: true
+    },
+    changedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    changedAt: {
+      type: Date,
+      default: Date.now
+    },
+    previousStatus: {
+      type: String,
+      enum: ['pending', 'in_progress', 'in-progress', 'completed', 'cancelled']
+    }
+  }],
   createdAt: {
     type: Date,
     default: Date.now
