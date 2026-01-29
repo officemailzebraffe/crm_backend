@@ -116,11 +116,15 @@ const UserSchema = new mongoose.Schema({
   permissions: {
     dashboard: { type: Boolean, default: true },
     employees: { type: Boolean, default: false },
+    leads: { type: Boolean, default: false },
+    students: { type: Boolean, default: false },
+    courses: { type: Boolean, default: false },
     attendance: { type: Boolean, default: false },
     leaves: { type: Boolean, default: false },
     payroll: { type: Boolean, default: false },
     tasks: { type: Boolean, default: false },
     projects: { type: Boolean, default: false },
+    analytics: { type: Boolean, default: false },
     reports: { type: Boolean, default: false },
     settings: { type: Boolean, default: false }
   },

@@ -113,9 +113,12 @@ exports.createEmployee = async (req, res) => {
       role: role || 'employee',
       permissions: permissions || {
         dashboard: true,
+        employees: false,
         leads: false,
         students: false,
         courses: false,
+        attendance: false,
+        leaves: false,
         tasks: false,
         analytics: false,
         projects: false,
