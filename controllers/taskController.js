@@ -21,8 +21,19 @@ exports.getTasks = async (req, res) => {
 
     let query = { projectId };
 
-    // Role-based filtering: non-admin and non-manager users see only their assigned tasks or unassigned tasks
-    if (req.user.role !== 'admin' && req.user.role !== 'manager') {
+    // Role-based filtering for task visibility
+    if (req.user.role === 'admin') {
+      // Admins see all tasks - no additional filter needed
+    } else if (req.user.role === 'manager') {
+      // Managers see: tasks they created, tasks assigned to them, or unassigned tasks
+      query.$or = [
+        { assignedBy: req.user.id },
+        { assignedTo: req.user.id },
+        { assignedTo: null },
+        { assignedTo: { $exists: false } }
+      ];
+    } else {
+      // Regular users see only their assigned tasks or unassigned tasks
       query.$or = [
         { assignedTo: req.user.id },
         { assignedTo: null },
