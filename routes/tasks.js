@@ -9,17 +9,17 @@ const {
 } = require('../controllers/taskController');
 
 const router = express.Router();
-const { protect } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 
 router.get('/me', protect, getMyTasks);
 
 router.route('/')
   .get(protect, getTasks)
-  .post(protect, createTask);
+  .post(protect, authorize('admin', 'manager'), createTask);
 
 router.route('/:id')
   .get(protect, getTask)
-  .put(protect, updateTask)
-  .delete(protect, deleteTask);
+  .put(protect, authorize('admin', 'manager'), updateTask)
+  .delete(protect, authorize('admin', 'manager'), deleteTask);
 
 module.exports = router;

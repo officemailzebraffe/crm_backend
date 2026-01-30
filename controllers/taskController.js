@@ -21,8 +21,8 @@ exports.getTasks = async (req, res) => {
 
     let query = { projectId };
 
-    // Role-based filtering: non-admin users see only their assigned tasks or unassigned tasks
-    if (req.user.role !== 'admin') {
+    // Role-based filtering: non-admin and non-manager users see only their assigned tasks or unassigned tasks
+    if (req.user.role !== 'admin' && req.user.role !== 'manager') {
       query.$or = [
         { assignedTo: req.user.id },
         { assignedTo: null },
@@ -120,12 +120,12 @@ exports.updateTask = async (req, res) => {
       return res.status(404).json({ success: false, error: 'Task not found' });
     }
 
-    // Permission check for non-admin users
-    if (req.user.role !== 'admin') {
+    // Permission check for non-admin and non-manager users
+    if (req.user.role !== 'admin' && req.user.role !== 'manager') {
       const isAssignedToUser = existingTask.assignedTo && existingTask.assignedTo.toString() === req.user.id;
       const isUnassigned = !existingTask.assignedTo;
       
-      // Non-admin users can only update tasks assigned to them or unassigned tasks
+      // Regular users can only update tasks assigned to them or unassigned tasks
       if (!isAssignedToUser && !isUnassigned) {
         return res.status(403).json({ 
           success: false, 
@@ -133,7 +133,7 @@ exports.updateTask = async (req, res) => {
         });
       }
       
-      // Non-admin users can only change status, not other fields
+      // Regular users can only change status, not other fields
       const allowedFields = ['status'];
       const attemptedFields = Object.keys(req.body);
       const hasUnauthorizedFields = attemptedFields.some(field => !allowedFields.includes(field));
@@ -141,7 +141,7 @@ exports.updateTask = async (req, res) => {
       if (hasUnauthorizedFields) {
         return res.status(403).json({ 
           success: false, 
-          error: 'Only admins can update task details other than status' 
+          error: 'Only admins and managers can update task details other than status' 
         });
       }
     }
@@ -191,11 +191,11 @@ exports.deleteTask = async (req, res) => {
       return res.status(404).json({ success: false, error: 'Task not found' });
     }
 
-    // Permission check: only admins can delete tasks
-    if (req.user.role !== 'admin') {
+    // Permission check: only admins and managers can delete tasks
+    if (req.user.role !== 'admin' && req.user.role !== 'manager') {
       return res.status(403).json({ 
         success: false, 
-        error: 'Only admins can delete tasks' 
+        error: 'Only admins and managers can delete tasks' 
       });
     }
 
